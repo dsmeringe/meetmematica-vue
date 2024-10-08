@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { supabase } from '../supabase'
+import { Provider } from '@supabase/supabase-js'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(null)
+  const user = ref<any>(null)
   const loading = ref(true)
 
   async function loadUser() {
@@ -13,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = false
   }
 
-  async function handleLogin(provider) {
+  async function handleLogin(provider:Provider) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: provider,
     })
