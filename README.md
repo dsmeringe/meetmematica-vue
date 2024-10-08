@@ -1,9 +1,12 @@
 # Vue 3 + TypeScript + Vite
 
+## Playing with bolt.new AI
+
 Test using https://bolt.new to generate a new web application using vue.
 
 Initially prompted this:
-```Build an online web application called MeetMeMatica with Vue for allowing people to sign up for events. It would initially be for padel tennis games where I as an administrator should be able to create a new public game invitation for people to sign up to be part of. The purpose would be to connect to new people while also matching player levels fairly. Invitation would be sent on LinkedIn and preferably users should be able to sign up using their linkedIn account and basic data be fetched from there too.
+```
+Build an online web application called MeetMeMatica with Vue for allowing people to sign up for events. It would initially be for padel tennis games where I as an administrator should be able to create a new public game invitation for people to sign up to be part of. The purpose would be to connect to new people while also matching player levels fairly. Invitation would be sent on LinkedIn and preferably users should be able to sign up using their linkedIn account and basic data be fetched from there too.
 An event should be possible to be recurring with interval, say biweekly. Doesn't have to be unique invitation links. The app should prioritize new players from previous games since the primary purpose is new connections/players to play with, while still allowing recurring players if not enough has signed up or everyone already been part.
 The public invitation should be a link where user signs up, and a set of basic data is collected (potentially via LinkedIn data), including
 
@@ -16,9 +19,11 @@ If there is a limit number of participants defined for the event then the system
 An email message should be sent to admin with suggestion of participants (everyone registered if there was no limit, otherwise the best matching) upon last day of registration. Event owner should be able to log in and approve this list and trigger email message sent to participants with invitation and with that mark them in system database as partakers of that specific event instance. The event owner should here also see everyone else that has registered but not been suggested and if they have been part of the event before with the last time date displayed in the list. The event owner should be able to replace one of the suggested participants with the other registered participants.
 
 Additionally you should be able to register (with SSO - primarily using linkedIn, but also Google and apple) for a system user account so you can crud, list and manage your own events or see list of open public events in the system to apply for. You should also be able to log out of the system.
-At any time an admin should be able to deactivate an event, or deactivate their account.```
+At any time an admin should be able to deactivate an event, or deactivate their account.
+```
 
 Looked at the working output and realized I wanted a separate admin section:
+
 ```
 Can you also mock up the admin pages needed to list, create, update and delete events as an event owner/admin?
 ```
