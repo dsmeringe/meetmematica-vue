@@ -89,4 +89,4 @@ constraint Questions_event_id_fkey1 foreign key (event_id) references "Events" (
 This should be for all places in the application such as list, details, admin pages etc.
 ```
 
-That prompt actually cased some havoc for Bolt, with part of code output in chat instead.. then I ran out of credits.. so now I'll probably fly manual for a while :D 
+That prompt actually caused some havoc for Bolt, with part of code output in chat instead so I had to copy/paste and glue together some minor parts.. then I ran out of credits.. so now I'll probably fly manual for a while - or move over to CoPilot flight :D 
