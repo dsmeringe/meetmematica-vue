@@ -9,6 +9,7 @@ import AdminDashboard from '../views/admin/AdminDashboard.vue'
 import AdminEventList from '../views/admin/AdminEventList.vue'
 import AdminEventCreate from '../views/admin/AdminEventCreate.vue'
 import AdminEventEdit from '../views/admin/AdminEventEdit.vue'
+import { useAuthStore } from '../stores/auth'
 
 const routes = [
   { path: '/', component: Home },
@@ -20,6 +21,7 @@ const routes = [
   { 
     path: '/admin', 
     component: AdminDashboard,
+    meta: { requiresAuth: true },
     children: [
       { path: 'events', component: AdminEventList },
       { path: 'events/create', component: AdminEventCreate },
@@ -31,6 +33,20 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (!authStore.user) {
+      next({ path: '/login', query: { redirect: to.fullPath } })
+    } else {
+      next()
+    }
+  } else {
+    next()
+  }
 })
 
 export default router
