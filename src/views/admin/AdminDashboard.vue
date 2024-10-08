@@ -7,13 +7,13 @@
       </div>
       <nav class="mt-4">
         <router-link to="/admin/events" class="block py-2 px-4 text-gray-700 hover:bg-gray-200">
-          Manage Events
+          Manage Your Events
         </router-link>
-        <a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200">
+        <!-- <a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200">
           Manage Users
-        </a>
+        </a> -->
         <a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200">
-          Settings
+          Settings (currently N/A)
         </a>
       </nav>
     </div>

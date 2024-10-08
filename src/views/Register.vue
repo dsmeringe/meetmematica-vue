@@ -20,11 +20,6 @@
         </button>
       </div>
     </form>
-    <div class="mt-4">
-      <button @click="handleLinkedInRegister" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">
-        Register with LinkedIn
-      </button>
-    </div>
   </div>
 </template>
 
@@ -38,10 +33,5 @@ const password = ref('')
 const handleRegister = () => {
   // Implement registration logic here
   console.log('Registration attempt', { name: name.value, email: email.value, password: password.value })
-}
-
-const handleLinkedInRegister = () => {
-  // Implement LinkedIn OAuth registration here
-  console.log('LinkedIn registration attempt')
 }
 </script>
