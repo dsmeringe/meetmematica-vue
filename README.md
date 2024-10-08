@@ -1,5 +1,87 @@
 # Vue 3 + TypeScript + Vite
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Test using https://bolt.new to generate a new web application using vue.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+Initially prompted this:
+```Build an online web application called MeetMeMatica with Vue for allowing people to sign up for events. It would initially be for padel tennis games where I as an administrator should be able to create a new public game invitation for people to sign up to be part of. The purpose would be to connect to new people while also matching player levels fairly. Invitation would be sent on LinkedIn and preferably users should be able to sign up using their linkedIn account and basic data be fetched from there too.
+An event should be possible to be recurring with interval, say biweekly. Doesn't have to be unique invitation links. The app should prioritize new players from previous games since the primary purpose is new connections/players to play with, while still allowing recurring players if not enough has signed up or everyone already been part.
+The public invitation should be a link where user signs up, and a set of basic data is collected (potentially via LinkedIn data), including
+
+- First and last name - Profession - Contact details; email and optionally phone. - Answers to dynamic questions of event created by admin
+Since the event doesn't have to be padel tennis but also any other type of events, the admin should be able to define
+
+- title/name of event - Active status - date and time for the event - is it recurring, and if so with what interval, in days? - Location - max number of attendees or players (like max 3 invitations for padel tennis since event owner should always be 1 of the four players) - Description of event - event specific dynamic questions of type dropdown selection of values, free text, true/false (checkbox). The dynamic questions should be possible to set as mandatory/optional, and if they should be part of weighing match making of participants (say for padel tennis we could have player levels as a list of selection where system would later try o match those with closest matching in relation to event owner). - Last date for registering
+If there is a limit number of participants defined for the event then the system should automatically suggest best matching participants by evaluating if they've attended before and for padel tennis and similar also weight in matching levels of participants and event owner. Newcomers should rank higher than recurring participants.
+
+An email message should be sent to admin with suggestion of participants (everyone registered if there was no limit, otherwise the best matching) upon last day of registration. Event owner should be able to log in and approve this list and trigger email message sent to participants with invitation and with that mark them in system database as partakers of that specific event instance. The event owner should here also see everyone else that has registered but not been suggested and if they have been part of the event before with the last time date displayed in the list. The event owner should be able to replace one of the suggested participants with the other registered participants.
+
+Additionally you should be able to register (with SSO - primarily using linkedIn, but also Google and apple) for a system user account so you can crud, list and manage your own events or see list of open public events in the system to apply for. You should also be able to log out of the system.
+At any time an admin should be able to deactivate an event, or deactivate their account.```
+
+Looked at the working output and realized I wanted a separate admin section:
+```
+Can you also mock up the admin pages needed to list, create, update and delete events as an event owner/admin?
+```
+
+Then I configured my supabase auth and db part. After that updated project .env file with Supabase configs
+```
+VITE_SUPABASE_URL = 
+VITE_SUPABASE_ANON_KEY = 
+```
+
+After that I asked bolt to add github SSO authentication (pending to fix linkedin etc that was my actual intention... I just know github top of head why that was easier to start with);
+
+```
+change so that the button 'Register for Event' is disabled when user is not logged in, and also add SSO logic to the application login functionality using supabase authentication and authorization?
+..and add SSO for Github button (via supabase of course) on login screen as well?
+```
+
+Realized then that the admin section was accessible without login. That won't work!
+```
+Update so the admin section is login protected. If user is not logged in, then the admin pages or menu option shouldn't be seen or found
+```
+
+Cool! all works fine so far. I can log in with github.. but it's mockup data! we wan't real data from my supabase.
+```
+Update application to query supabase for the Events (and adjust the field references where needed as names are probably not exact match) based on this schema for Events:
+
+create table
+public."Events" (
+id bigint generated by default as identity not null,
+created_at timestamp with time zone not null default now(),
+title character varying null,
+description text null,
+slug character varying null default ''::character varying,
+occurs timestamp with time zone null default (now() at time zone 'utc'::text),
+location character varying null,
+max_attendees integer null,
+min_attendees smallint null,
+last_registration_dt timestamp with time zone null,
+is_recurring boolean not null default false,
+recurring_interval smallint null,
+user_id uuid null default auth.uid (),
+constraint Events_pkey primary key (id),
+constraint Events_slug_key unique (slug)
+) tablespace pg_default;
+
+..and update the dynamic questions data retrieval and display based on this schema in supabase (postgresql):
+
+create table
+public."Questions" (
+id bigint generated by default as identity not null,
+created_at timestamp with time zone not null default now(),
+question character varying null default ''::character varying,
+type public.field_type not null,
+options character varying[] null,
+mandatory boolean null,
+matchmaking boolean null,
+event_id bigint null,
+constraint Questions_pkey primary key (id),
+constraint Questions_event_id_fkey foreign key (event_id) references "Events" (id),
+constraint Questions_event_id_fkey1 foreign key (event_id) references "Events" (id) on delete cascade
+) tablespace pg_default;
+
+This should be for all places in the application such as list, details, admin pages etc.
+```
+
+That prompt actually cased some havoc for Bolt, with part of code output in chat instead.. then I ran out of credits.. so now I'll probably fly manual for a while :D 
