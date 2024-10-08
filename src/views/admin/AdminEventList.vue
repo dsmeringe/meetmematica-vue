@@ -7,7 +7,13 @@
       </router-link>
     </div>
 
-    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+    <div v-if="loading" class="text-center text-gray-500">
+      Loading events...
+    </div>
+    <div v-else-if="events.length === 0" class="text-center text-gray-500">
+      No events available.
+    </div>
+    <div v-else class="bg-white shadow-md rounded-lg overflow-hidden">
       <table class="min-w-full leading-normal">
         <thead>
           <tr>
@@ -19,9 +25,6 @@
             </th>
             <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Location
-            </th>
-            <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-              Status
             </th>
             <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
               Actions
@@ -41,24 +44,13 @@
             </td>
             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
               <p class="text-gray-900 whitespace-no-wrap">
-                {{ formatDate(event.date) }}
+                {{ formatDate(event.occurs) }}
               </p>
             </td>
             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
               <p class="text-gray-900 whitespace-no-wrap">
                 {{ event.location }}
               </p>
-            </td>
-            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-              <span
-                class="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight"
-              >
-                <span
-                  aria-hidden
-                  class="absolute inset-0 bg-green-200 opacity-50 rounded-full"
-                ></span>
-                <span class="relative">{{ event.status }}</span>
-              </span>
             </td>
             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
               <router-link :to="`/admin/events/${event.id}/edit`" class="text-indigo-600 hover:text-indigo-900 mr-3">
@@ -78,35 +70,51 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { format } from 'date-fns'
+import { supabase } from '../../supabase'
 
 interface Event {
   id: number;
   title: string;
-  date: string;
+  occurs: string;
   location: string;
-  status: string;
 }
 
 const events = ref<Event[]>([])
+const loading = ref(true)
 
-onMounted(() => {
-  // Fetch events from API
-  // For now, we'll use mock data
-  events.value = [
-    { id: 1, title: 'Padel Tennis Tournament', date: '2023-12-15T14:00:00', location: 'City Sports Center', status: 'Active' },
-    { id: 2, title: 'Networking Mixer', date: '2023-12-20T18:00:00', location: 'Downtown Conference Center', status: 'Active' },
-    { id: 3, title: 'Tech Meetup', date: '2023-12-22T19:00:00', location: 'Tech Hub', status: 'Draft' },
-  ]
+onMounted(async () => {
+  try {
+    const { data, error } = await supabase
+      .from('Events')
+      .select('*')
+      .order('occurs', { ascending: true })
+    
+    if (error) throw error
+    events.value = data
+  } catch (error) {
+    console.error('Error fetching events:', error)
+  } finally {
+    loading.value = false
+  }
 })
 
 const formatDate = (dateString: string) => {
   return format(new Date(dateString), 'MMMM d, yyyy h:mm a')
 }
 
-const deleteEvent = (eventId: number) => {
-  // Implement delete logic here
-  console.log('Delete event', eventId)
-  // After successful deletion, remove the event from the list
-  events.value = events.value.filter(event => event.id !== eventId)
+const deleteEvent = async (eventId: number) => {
+  try {
+    const { error } = await supabase
+      .from('Events')
+      .delete()
+      .eq('id', eventId)
+    
+    if (error) throw error
+    
+    // After successful deletion, remove the event from the list
+    events.value = events.value.filter(event => event.id !== eventId)
+  } catch (error) {
+    console.error('Error deleting event:', error)
+  }
 }
 </script>

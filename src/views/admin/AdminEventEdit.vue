@@ -6,84 +6,104 @@
         <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
           Event Title
         </label>
-        <input v-model="event.title" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="title" type="text" placeholder="Event Title">
+        <input v-model="event.title"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="title" type="text" placeholder="Event Title">
       </div>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
           Description
         </label>
-        <textarea v-model="event.description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="description" placeholder="Event Description"></textarea>
+        <textarea v-model="event.description"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="description" placeholder="Event Description"></textarea>
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="date">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="occurs">
           Date and Time
         </label>
-        <input v-model="event.date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="date" type="datetime-local">
+        <input v-model="event.occurs"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="occurs" type="datetime-local">
       </div>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="location">
           Location
         </label>
-        <input v-model="event.location" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="location" type="text" placeholder="Event Location">
+        <input v-model="event.location"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="location" type="text" placeholder="Event Location">
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="maxAttendees">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="max_attendees">
           Max Attendees
         </label>
-        <input v-model="event.maxAttendees" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="maxAttendees" type="number" min="1">
+        <input v-model="event.max_attendees"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="max_attendees" type="number" min="1">
       </div>
       <div class="mb-4">
         <label class="flex items-center">
-          <input v-model="event.isRecurring" type="checkbox" class="form-checkbox">
+          <input v-model="event.is_recurring" type="checkbox" class="form-checkbox">
           <span class="ml-2 text-gray-700 text-sm font-bold">Recurring Event</span>
         </label>
       </div>
-      <div v-if="event.isRecurring" class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="recurringInterval">
+      <div v-if="event.is_recurring" class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="recurring_interval">
           Recurring Interval (days)
         </label>
-        <input v-model="event.recurringInterval" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="recurringInterval" type="number" min="1">
+        <input v-model="event.recurring_interval"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="recurring_interval" type="number" min="1">
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="lastRegistrationDate">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="last_registration_dt">
           Last Registration Date
         </label>
-        <input v-model="event.lastRegistrationDate" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="lastRegistrationDate" type="date">
+        <input v-model="event.last_registration_dt"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="last_registration_dt" type="datetime-local">
       </div>
       <div class="mb-4">
         <h3 class="text-lg font-bold mb-2">Dynamic Questions</h3>
-        <button @click.prevent="addQuestion" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-2">
+        <button @click.prevent="addQuestion"
+          class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-2">
           Add Question
         </button>
-        <div v-for="(question, index) in event.dynamicQuestions" :key="index" class="mb-4 p-4 border rounded">
-          <input v-model="question.text" placeholder="Question" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
-          <select v-model="question.type" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
+        <div v-for="(question, index) in questions" :key="index" class="mb-4 p-4 border rounded">
+          <input v-model="question.question" placeholder="Question"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
+          <select v-model="question.type"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
             <option value="dropdown">Dropdown</option>
             <option value="text">Free Text</option>
             <option value="boolean">Yes/No</option>
           </select>
           <div v-if="question.type === 'dropdown'">
-            <input v-model="question.options" placeholder="Options (comma-separated)" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
+            <input v-model="question.options" placeholder="Options (comma-separated)"
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
           </div>
           <div>
             <label class="flex items-center">
-              <input v-model="question.isMandatory" type="checkbox" class="form-checkbox">
+              <input v-model="question.mandatory" type="checkbox" class="form-checkbox">
               <span class="ml-2">Mandatory</span>
             </label>
           </div>
           <div>
             <label class="flex items-center">
-              <input v-model="question.isWeighted" type="checkbox" class="form-checkbox">
+              <input v-model="question.matchmaking" type="checkbox" class="form-checkbox">
               <span class="ml-2">Use for Matchmaking</span>
             </label>
           </div>
-          <button @click.prevent="removeQuestion(index)" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mt-2">
+          <button @click.prevent="removeQuestion(index)"
+            class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded mt-2">
             Remove
           </button>
         </div>
       </div>
       <div class="flex items-center justify-between">
-        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+        <button type="submit"
+          class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
           Update Event
         </button>
       </div>
@@ -96,89 +116,139 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { supabase } from '../../supabase'
 
-interface DynamicQuestion {
-  text: string;
+interface Question {
+  id?: number;
+  question: string;
   type: 'dropdown' | 'text' | 'boolean';
   options?: string;
-  isMandatory: boolean;
-  isWeighted: boolean;
+  mandatory: boolean;
+  matchmaking: boolean;
 }
 
 interface Event {
   id: number;
   title: string;
   description: string;
-  date: string;
+  occurs: string;
   location: string;
-  maxAttendees: number;
-  isRecurring: boolean;
-  recurringInterval?: number;
-  lastRegistrationDate: string;
-  dynamicQuestions: DynamicQuestion[];
+  max_attendees: number;
+  is_recurring: boolean;
+  recurring_interval?: number;
+  last_registration_dt: string;
 }
 
 const route = useRoute()
+const router = useRouter()
 const event = ref<Event | null>(null)
+const questions = ref<Question[]>([])
 
-onMounted(() => {
-  // Fetch event details from API using route.params.id
-  // For now, we'll use mock data
-  event.value = {
-    id: 1,
-    title: 'Padel Tennis Tournament',
-    description: 'Join us for an exciting padel tennis tournament!',
-    date: '2023-12-15T14:00:00',
-    location: 'City Sports Center',
-    maxAttendees: 16,
-    isRecurring: true,
-    recurringInterval: 14,
-    lastRegistrationDate: '2023-12-14',
-    dynamicQuestions: [
-      {
-        text: 'What is your skill level?',
-        type: 'dropdown',
-        options: 'Beginner,Intermediate,Advanced',
-        isMandatory: true,
-        isWeighted: true,
-      },
-      {
-        text: 'Do you have your own racket?',
-        type: 'boolean',
-        isMandatory: false,
-        isWeighted: false,
-      },
-      {
-        text: 'Any additional comments?',
-        type: 'text',
-        isMandatory: false,
-        isWeighted: false,
-      },
-    ],
+onMounted(async () => {
+  const eventId = route.params.id
+  try {
+    // Fetch event details
+    const { data: eventData, error: eventError } = await supabase
+      .from('Events')
+      .select('*')
+      .eq('id', eventId)
+      .single()
+
+    if (eventError) throw eventError
+    event.value = eventData
+
+    // Fetch questions for the event
+    const { data: questionData, error: questionError } = await supabase
+      .from('Questions')
+      .select('*')
+      .eq('event_id', eventId)
+
+    if (questionError) throw questionError
+    questions.value = questionData.map(q => ({
+      ...q,
+      options: q.options ? q.options.join(',') : ''
+    }))
+  } catch (error) {
+    console.error('Error fetching event details:', error)
   }
 })
 
 const addQuestion = () => {
-  if (event.value) {
-    event.value.dynamicQuestions.push({
-      text: '',
-      type: 'text',
-      isMandatory: false,
-      isWeighted: false,
-    })
-  }
+  questions.value.push({
+    question: '',
+    type: 'text',
+    mandatory: false,
+    matchmaking: false,
+  })
 }
 
 const removeQuestion = (index: number) => {
-  if (event.value) {
-    event.value.dynamicQuestions.splice(index, 1)
-  }
+  questions.value.splice(index, 1)
 }
 
-const handleUpdateEvent = () => {
-  // Implement event update logic here
-  console.log('Update event', event.value)
-  // After successful update, redirect to the event list or show a success message
+const handleUpdateEvent = async () => {
+  if (!event.value) return
+
+  try {
+    // Update event
+    const { error: eventError } = await supabase
+      .from('Events')
+      .update(event.value)
+      .eq('id', event.value.id)
+
+    if (eventError) throw eventError
+
+    // Update questions
+    const questionsToUpdate = questions.value.filter(q => q.id).map(q => ({
+      ...q,
+      event_id: event.value!.id,
+      options: q.type === 'dropdown' ? q.options?.split(',').map(o => o.trim()) : null
+    }))
+
+    const questionsToInsert = questions.value.filter(q => !q.id).map(q => ({
+      ...q,
+      event_id: event.value!.id,
+      options: q.type === 'dropdown' ? q.options?.split(',').map(o => o.trim()) : null
+    }))
+ 
+    /*
+    const questionIdsToKeep = questionsToUpdate.map(q => q.id)
+
+    // Delete questions that are no longer present
+   
+    const { error: deleteError } = await supabase
+      .from('Questions')
+      .delete()
+      .eq('event_id', event.value.id)
+      .not('id', 'in', questionIdsToKeep)
+
+    if (deleteError) throw deleteError
+    */
+
+    // Update existing questions
+    if (questionsToUpdate.length > 0) {
+      const { error: updateError } = await supabase
+        .from('Questions')
+        .upsert(questionsToUpdate)
+
+      if (updateError) throw updateError
+    }
+
+    // Insert new questions
+    if (questionsToInsert.length > 0) {
+      const { error: insertError } = await supabase
+        .from('Questions')
+        .insert(questionsToInsert)
+
+      if (insertError) throw insertError
+    }
+
+    // Redirect to event list after successful update
+    router.push('/admin/events')
+
+  } catch (error) {
+    console.error('Error updating event:', error)
+  }
 }
 </script>

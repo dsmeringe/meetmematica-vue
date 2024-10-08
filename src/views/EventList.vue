@@ -7,7 +7,7 @@
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div v-for="event in events" :key="event.id" class="bg-white shadow rounded-lg p-6">
         <h3 class="text-xl font-semibold mb-2">{{ event.title }}</h3>
-        <p class="text-gray-600 mb-2">{{ formatDate(event.date) }}</p>
+        <p class="text-gray-600 mb-2">{{ formatDate(event.occurs) }}</p>
         <p class="text-gray-600 mb-2">{{ event.location }}</p>
         <p class="text-gray-600 mb-4">{{ event.description }}</p>
         <router-link :to="'/events/' + event.id" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -21,15 +21,18 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { format } from 'date-fns'
+import { supabase } from '../supabase'
 
 interface Event {
   id: number;
   title: string;
-  date: string;
+  occurs: string;
   location: string;
   description: string;
+  updated_at: string;
 }
 
+/*
 const events = ref<Event[]>([])
 
 onMounted(() => {
@@ -40,6 +43,24 @@ onMounted(() => {
     { id: 2, title: 'Networking Mixer', date: '2023-12-20T18:00:00', location: 'Downtown Conference Center', description: 'Connect with professionals from various industries.' },
     { id: 3, title: 'Tech Meetup', date: '2023-12-22T19:00:00', location: 'Tech Hub', description: 'Discuss the latest trends in technology and innovation.' },
   ]
+})*/
+const events = ref<Event[]>([])
+const loading = ref(true)
+
+onMounted(async () => {
+  try {
+    const { data, error } = await supabase
+      .from('Events')
+      .select('*')
+      .order('occurs', { ascending: true })
+    
+    if (error) throw error
+    events.value = data
+  } catch (error) {
+    console.error('Error fetching events:', error)
+  } finally {
+    loading.value = false
+  }
 })
 
 const formatDate = (dateString: string) => {

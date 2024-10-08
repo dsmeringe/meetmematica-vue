@@ -15,10 +15,10 @@
         <textarea v-model="event.description" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="description" placeholder="Event Description"></textarea>
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="date">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="occurs">
           Date and Time
         </label>
-        <input v-model="event.date" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="date" type="datetime-local">
+        <input v-model="event.occurs" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="occurs" type="datetime-local">
       </div>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="location">
@@ -27,36 +27,36 @@
         <input v-model="event.location" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="location" type="text" placeholder="Event Location">
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="maxAttendees">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="max_attendees">
           Max Attendees
         </label>
-        <input v-model="event.maxAttendees" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="maxAttendees" type="number" min="1">
+        <input v-model="event.max_attendees" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="max_attendees" type="number" min="1">
       </div>
       <div class="mb-4">
         <label class="flex items-center">
-          <input v-model="event.isRecurring" type="checkbox" class="form-checkbox">
+          <input v-model="event.is_recurring" type="checkbox" class="form-checkbox">
           <span class="ml-2 text-gray-700 text-sm font-bold">Recurring Event</span>
         </label>
       </div>
-      <div v-if="event.isRecurring" class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="recurringInterval">
+      <div v-if="event.is_recurring" class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="recurring_interval">
           Recurring Interval (days)
         </label>
-        <input v-model="event.recurringInterval" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="recurringInterval" type="number" min="1">
+        <input v-model="event.recurring_interval" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="recurring_interval" type="number" min="1">
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="lastRegistrationDate">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="last_registration_dt">
           Last Registration Date
         </label>
-        <input v-model="event.lastRegistrationDate" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="lastRegistrationDate" type="date">
+        <input v-model="event.last_registration_dt" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="last_registration_dt" type="datetime-local">
       </div>
       <div class="mb-4">
         <h3 class="text-lg font-bold mb-2">Dynamic Questions</h3>
         <button @click.prevent="addQuestion" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-2">
           Add Question
         </button>
-        <div v-for="(question, index) in event.dynamicQuestions" :key="index" class="mb-4 p-4 border rounded">
-          <input v-model="question.text" placeholder="Question" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
+        <div v-for="(question, index) in questions" :key="index" class="mb-4 p-4 border rounded">
+          <input v-model="question.question" placeholder="Question" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
           <select v-model="question.type" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
             <option value="dropdown">Dropdown</option>
             <option value="text">Free Text</option>
@@ -67,13 +67,13 @@
           </div>
           <div>
             <label class="flex items-center">
-              <input v-model="question.isMandatory" type="checkbox" class="form-checkbox">
+              <input v-model="question.mandatory" type="checkbox" class="form-checkbox">
               <span class="ml-2">Mandatory</span>
             </label>
           </div>
           <div>
             <label class="flex items-center">
-              <input v-model="question.isWeighted" type="checkbox" class="form-checkbox">
+              <input v-model="question.matchmaking" type="checkbox" class="form-checkbox">
               <span class="ml-2">Use for Matchmaking</span>
             </label>
           </div>
@@ -93,54 +93,85 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { supabase } from '../../supabase'
 
-interface DynamicQuestion {
-  text: string;
+interface Question {
+  question: string;
   type: 'dropdown' | 'text' | 'boolean';
   options?: string;
-  isMandatory: boolean;
-  isWeighted: boolean;
+  mandatory: boolean;
+  matchmaking: boolean;
 }
 
 interface Event {
   title: string;
   description: string;
-  date: string;
+  occurs: string;
   location: string;
-  maxAttendees: number;
-  isRecurring: boolean;
-  recurringInterval?: number;
-  lastRegistrationDate: string;
-  dynamicQuestions: DynamicQuestion[];
+  max_attendees: number;
+  is_recurring: boolean;
+  recurring_interval?: number;
+  last_registration_dt: string;
 }
 
+const router = useRouter()
 const event = reactive<Event>({
   title: '',
   description: '',
-  date: '',
+  occurs: '',
   location: '',
-  maxAttendees: 0,
-  isRecurring: false,
-  lastRegistrationDate: '',
-  dynamicQuestions: [],
+  max_attendees: 0,
+  is_recurring: false,
+  last_registration_dt: '',
 })
 
+const questions = ref<Question[]>([])
+
 const addQuestion = () => {
-  event.dynamicQuestions.push({
-    text: '',
+  questions.value.push({
+    question: '',
     type: 'text',
-    isMandatory: false,
-    isWeighted: false,
+    mandatory: false,
+    matchmaking: false,
   })
 }
 
 const removeQuestion = (index: number) => {
-  event.dynamicQuestions.splice(index, 1)
+  questions.value.splice(index, 1)
 }
 
-const handleCreateEvent = () => {
-  // Implement event creation logic here
-  console.log('Create event', event)
-  // After successful creation, redirect to the event list or show a success message
+const handleCreateEvent = async () => {
+  try {
+    // Insert event
+    const { data: eventData, error: eventError } = await supabase
+      .from('Events')
+      .insert([event])
+      .select()
+    
+    if (eventError) throw eventError
+
+    const eventId = eventData[0].id
+
+    // Insert questions
+    if (questions.value.length > 0) {
+      const questionsWithEventId = questions.value.map(q => ({
+        ...q,
+        event_id: eventId,
+        options: q.type === 'dropdown' ? q.options?.split(',').map(o => o.trim()) : null
+      }))
+
+      const { error: questionsError } = await supabase
+        .from('Questions')
+        .insert(questionsWithEventId)
+
+      if (questionsError) throw questionsError
+    }
+
+    // Redirect to event list after successful creation
+    router.push('/admin/events')
+  } catch (error) {
+    console.error('Error creating event:', error)
+  }
 }
 </script>
