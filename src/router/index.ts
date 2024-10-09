@@ -9,6 +9,8 @@ import AdminDashboard from '../views/admin/AdminDashboard.vue'
 import AdminEventList from '../views/admin/AdminEventList.vue'
 import AdminEventCreate from '../views/admin/AdminEventCreate.vue'
 import AdminEventEdit from '../views/admin/AdminEventEdit.vue'
+import AdminSettings from '../views/admin/AdminSettings.vue'
+
 import { useAuthStore } from '../stores/auth'
 
 const routes = [
@@ -26,6 +28,7 @@ const routes = [
       { path: 'events', component: AdminEventList },
       { path: 'events/create', component: AdminEventCreate },
       { path: 'events/:id/edit', component: AdminEventEdit },
+      { path: 'settings', component: AdminSettings }
     ]
   },
 ]
