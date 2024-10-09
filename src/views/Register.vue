@@ -25,13 +25,23 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useAuthStore } from '../stores/auth'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
+
+const authStore = useAuthStore()
 const name = ref('')
 const email = ref('')
 const password = ref('')
 
-const handleRegister = () => {
-  // Implement registration logic here
-  console.log('Registration attempt', { name: name.value, email: email.value, password: password.value })
+const handleRegister = async () => {
+  const { error } = await authStore.handleEmailRegister(email.value, password.value, name.value)
+  if (error) {
+    console.error('Error registering:', error.message)
+  } else {
+    console.log('Registration successful')
+    router.push('/login')
+  }
 }
 </script>

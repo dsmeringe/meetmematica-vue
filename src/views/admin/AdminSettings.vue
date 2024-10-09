@@ -33,11 +33,10 @@
   
   onMounted(async () => {
     loading.value = true
-    const { data } = authStore.user
-    if (data.user) {
-      user.value.email = data.user.email
-      user.value.full_name = data.user.user_metadata.full_name || ''
-      user.value.phone = data.user.user_metadata.phone || ''
+    if (authStore.user) {
+      user.value.email = authStore.user.email
+      user.value.full_name = authStore.user.user_metadata.full_name || ''
+      user.value.phone = authStore.user.user_metadata.phone || ''
     }
     loading.value = false
   })

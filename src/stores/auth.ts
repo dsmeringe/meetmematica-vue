@@ -14,11 +14,34 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = false
   }
 
-  async function handleLogin(provider:Provider) {
+  async function handleLogin(provider: Provider) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: provider,
     })
     if (error) console.error('Error logging in:', error.message)
+  }
+
+  async function handleEmailLogin(email: string, password: string) {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    })
+    if (error) console.error('Error logging in with email:', error.message)
+    return { error }
+  }
+
+  async function handleEmailRegister(email: string, password: string, fullName: string) {
+    const { error } = await supabase.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
+    })
+    if (error) console.error('Error registering with email:', error.message)
+    return { error }
   }
 
   async function handleLogout() {
@@ -27,5 +50,5 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
-  return { user, loading, loadUser, handleLogin, handleLogout }
+  return { user, loading, loadUser, handleLogin, handleEmailLogin, handleEmailRegister, handleLogout }
 })
