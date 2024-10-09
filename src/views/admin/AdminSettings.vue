@@ -33,7 +33,7 @@
   
   onMounted(async () => {
     loading.value = true
-    const { user } = authStore.user
+    const { data } = authStore.user
     if (data.user) {
       user.value.email = data.user.email
       user.value.full_name = data.user.user_metadata.full_name || ''
