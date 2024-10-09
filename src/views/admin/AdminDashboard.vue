@@ -12,9 +12,9 @@
         <!-- <a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200">
           Manage Users
         </a> -->
-        <a href="#" class="block py-2 px-4 text-gray-700 hover:bg-gray-200">
-          Settings (currently N/A)
-        </a>
+        <router-link to="/admin/settings" class="block py-2 px-4 text-gray-700 hover:bg-gray-200">
+          Settings
+        </router-link>
       </nav>
     </div>
 
