@@ -71,6 +71,9 @@
 import { ref, onMounted } from 'vue'
 import { format } from 'date-fns'
 import { supabase } from '../../supabase'
+import { useAuthStore } from '../../stores/auth'
+
+const authStore = useAuthStore()
 
 interface Event {
   id: number;
@@ -87,6 +90,7 @@ onMounted(async () => {
     const { data, error } = await supabase
       .from('Events')
       .select('*')
+      .eq('user_id', authStore.user.id)
       .order('occurs', { ascending: true })
     
     if (error) throw error
