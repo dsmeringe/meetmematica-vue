@@ -13,7 +13,7 @@
         </div>
         <div class="mb-4">
           <label class="block text-gray-700">Phone:</label>
-          <input v-model="user.phone" type="text" class="w-full px-3 py-2 border rounded" />
+          <input v-model="user.phone" type="tel" class="w-full px-3 py-2 border rounded" />
         </div>
         <button @click="updateUser" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Save Changes
@@ -33,7 +33,7 @@
   
   onMounted(async () => {
     loading.value = true
-    const { data, error } = await supabase.auth.getUser()
+    const { user } = authStore.user
     if (data.user) {
       user.value.email = data.user.email
       user.value.full_name = data.user.user_metadata.full_name || ''
