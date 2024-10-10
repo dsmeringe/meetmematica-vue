@@ -2,12 +2,12 @@
   <div v-if="event" class="max-w-2xl mx-auto">
     <h2 class="text-3xl font-bold mb-4">{{ event.title }}</h2>
     <div class="bg-white shadow rounded-lg p-6">
-      <p class="text-gray-600 mb-2"><strong>Date:</strong> {{ formatDate(event.occurs) }}</p>
-      <p class="text-gray-600 mb-2"><strong>Location:</strong> {{ event.location }}</p>
-      <p class="text-gray-600 mb-4"><strong>Description:</strong> {{ event.description }}</p>
+      <p class="text-gray-600 mb-2"><strong>Date:</strong> {{ (event.instance_occurs) }}</p>
+      <p class="text-gray-600 mb-2"><strong>Location:</strong> {{ event.Events.location }}</p>
+      <p class="text-gray-600 mb-4"><strong>Description:</strong> {{ event.Events.description }}</p>
       <p class="text-gray-600 mb-2"><strong>Max Attendees:</strong> {{ event.max_attendees }}</p>
-      <p class="text-gray-600 mb-2"><strong>Last Registration Date:</strong> {{ formatDate(event.last_registration_dt) }}</p>
-      <p v-if="event.is_recurring" class="text-gray-600 mb-4">
+      <p class="text-gray-600 mb-2"><strong>Last Registration Date:</strong> {{ (event.last_registration_dt) }}</p>
+      <p v-if="event.recurring == 0 || event.recurring > 1" class="text-gray-600 mb-4">
         <strong>Recurring Event:</strong> Every {{ event.recurring_interval }} days
       </p>
       <h3 class="text-xl font-semibold mb-2">Registration Questions</h3>
@@ -23,7 +23,13 @@
               </option>
             </select>
           </div>
-          <div v-else-if="question.type === 'text'">
+          <div v-else-if="question.type === 'shorttext'">
+            <input type="text" :id="'question-' + question.id" v-model="answers[question.id]" :required="question.mandatory" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+          </div>
+          <div v-else-if="question.type === 'longtext' || question.type === 'text'">
+            <input type="text" :id="'question-' + question.id" v-model="answers[question.id]" :required="question.mandatory" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+          </div>
+          <div v-else-if="question.type === 'shorttext'">
             <input type="text" :id="'question-' + question.id" v-model="answers[question.id]" :required="question.mandatory" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
           </div>
           <div v-else-if="question.type === 'boolean'">
@@ -56,7 +62,7 @@ import { supabase } from '../supabase'
 interface Question {
   id: number;
   question: string;
-  type: 'dropdown' | 'text' | 'boolean';
+  type: 'dropdown' | 'shorttext' | 'longtext' | 'float' | 'boolean' | 'date';
   options?: string[];
   mandatory: boolean;
   matchmaking: boolean;
@@ -69,7 +75,7 @@ interface Event {
   location: string;
   description: string;
   max_attendees: number;
-  is_recurring: boolean;
+  recurring: number;
   recurring_interval?: number;
   last_registration_dt: string;
 }
@@ -84,13 +90,21 @@ const loading = ref(true)
 onMounted(async () => {
   const eventId = route.params.id
   try {
-    // Fetch event details
+    // Fetch event details for the next upcoming event
     const { data: eventData, error: eventError } = await supabase
-      .from('Events')
-      .select('*')
-      .eq('id', eventId)
+      .from('EventInstances')
+      .select(`
+      *,
+      Events (
+        *
+      )
+      `)
+      .eq('event_id', eventId)
+      .gt('instance_occurs', new Date().toISOString())
+      .order('instance_occurs', { ascending: true })
+      .limit(1)
       .single()
-    
+
     if (eventError) throw eventError
     event.value = eventData
 
@@ -108,17 +122,57 @@ onMounted(async () => {
     loading.value = false
   }
 })
-
+/*
 const formatDate = (dateString: string) => {
-  return format(new Date(dateString), 'MMMM d, yyyy h:mm a')
-}
+  let date = new Date(dateString)
+  try {
+    format(new Date(dateString), 'MMMM d, yyyy h:mm a')
+  } catch (error) {
+    console.error('Error formatting date:', error)
+  }
+  return date
+}*/
 
-const handleRegistration = () => {
+const handleRegistration = async () => {
   if (!authStore.user) {
     console.log('User not logged in')
     return
   }
-  // Implement registration logic here
-  console.log('Registration submitted', { eventId: event.value?.id, answers: answers.value })
+
+  try {
+    // Insert registration
+    const { data: registrationData, error: registrationError } = await supabase
+      .from('Registrations')
+      .insert({
+        event_instance_id: event.value?.id,
+        user_id: authStore.user.id,
+      })
+      .select()
+      .single()
+    
+    if (registrationError) throw registrationError
+
+    const registrationId = registrationData.id
+
+    // Insert answers
+    const answersToInsert = Object.entries(answers.value).map(([questionId, answer]) => ({
+      question_id: questionId,
+      answer_text: typeof answer === 'string' ? answer : null,
+      answer_date: null,
+      answer_number: null,
+      user_id: authStore.user.id,
+      event_instance_id: event.value?.id,
+    }))
+
+    const { error: answersError } = await supabase
+      .from('QuestionAnswers')
+      .insert(answersToInsert)
+    
+    if (answersError) throw answersError
+
+    console.log('Registration successful')
+  } catch (error) {
+    console.error('Error registering:', error)
+  }
 }
 </script>
