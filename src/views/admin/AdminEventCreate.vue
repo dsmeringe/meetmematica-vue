@@ -33,16 +33,21 @@
         <input v-model="event.max_attendees" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="max_attendees" type="number" min="1">
       </div>
       <div class="mb-4">
-        <label class="flex items-center">
-          <input v-model="event.is_recurring" type="checkbox" class="form-checkbox">
-          <span class="ml-2 text-gray-700 text-sm font-bold">Recurring Event</span>
-        </label>
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="recurring">
+            Recurring Event
+          </label>
+          <input v-model="event.recurring" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="location" type="text" placeholder="Event Location">
       </div>
-      <div v-if="event.is_recurring" class="mb-4">
+      <div v-if="event.recurring == 0 || event.recurring > 1" class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="recurring_interval">
           Recurring Interval (days)
         </label>
         <input v-model="event.recurring_interval" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="recurring_interval" type="number" min="1">
+        <span style="font-size:0.7em">
+          <button @click="event.recurring_interval=7" class="bg-green-500 hover:bg-green-700 text-white py-0 px-2 rounded mb-2">Weekly (7d)</button>
+        <button @click="event.recurring_interval=14" class="bg-green-500 hover:bg-green-700 text-white py-0 px-2 rounded mb-2">Bi-weekly (14d)</button>
+        <button @click="event.recurring_interval=30" class="bg-green-500 hover:bg-green-700 text-white py-0 px-2 rounded mb-2">Monthly (30d)</button>
+        <button @click="event.recurring_interval=365" class="bg-green-500 hover:bg-green-700 text-white py-0 px-2 rounded mb-2">Yearly (365d)</button></span>
       </div>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="last_registration_dt">
@@ -110,7 +115,7 @@ interface Event {
   occurs: string;
   location: string;
   max_attendees: number;
-  is_recurring: boolean;
+  recurring: number;
   recurring_interval?: number;
   last_registration_dt: string;
 }
@@ -122,7 +127,7 @@ const event = reactive<Event>({
   occurs: '',
   location: '',
   max_attendees: 0,
-  is_recurring: false,
+  recurring: 1,
   last_registration_dt: '',
 })
 

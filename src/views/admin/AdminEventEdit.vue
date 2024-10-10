@@ -43,12 +43,14 @@
           id="max_attendees" type="number" min="1">
       </div>
       <div class="mb-4">
-        <label class="flex items-center">
-          <input v-model="event.is_recurring" type="checkbox" class="form-checkbox">
-          <span class="ml-2 text-gray-700 text-sm font-bold">Recurring Event</span>
+        <label class="flex items-center" for="recurring">
+          Recurring Event (0 for non-recurring)
         </label>
+        <input v-model="event.recurring"
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          id="recurring" type="number" min="0" />
       </div>
-      <div v-if="event.is_recurring" class="mb-4">
+      <div v-if="event.recurring == 0 || event.recurring > 1" class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="recurring_interval">
           Recurring Interval (days)
         </label>
@@ -76,7 +78,9 @@
           <select v-model="question.type"
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
             <option value="dropdown">Dropdown</option>
-            <option value="text">Free Text</option>
+            <option value="shorttext">One line text</option>
+            <option value="longtext">Free Text</option>
+            <option value="date">Free Text</option>
             <option value="boolean">Yes/No</option>
           </select>
           <div v-if="question.type === 'dropdown'">
@@ -122,7 +126,7 @@ import { supabase } from '../../supabase'
 interface Question {
   id?: number;
   question: string;
-  type: 'dropdown' | 'text' | 'boolean';
+  type: 'dropdown' | 'shorttext' | 'longtext' | 'float' | 'boolean' | 'date';
   options?: string;
   mandatory: boolean;
   matchmaking: boolean;
@@ -135,7 +139,7 @@ interface Event {
   occurs: string;
   location: string;
   max_attendees: number;
-  is_recurring: boolean;
+  recurring: number;
   recurring_interval?: number;
   last_registration_dt: string;
 }
@@ -177,7 +181,7 @@ onMounted(async () => {
 const addQuestion = () => {
   questions.value.push({
     question: '',
-    type: 'text',
+    type: 'shorttext',
     mandatory: false,
     matchmaking: false,
   })
