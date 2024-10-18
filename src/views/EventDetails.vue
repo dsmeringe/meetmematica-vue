@@ -1,6 +1,6 @@
 <template>
   <div v-if="event && !registered" class="max-w-2xl mx-auto">
-    <h2 class="text-3xl font-bold mb-4">{{ event.title }}</h2>
+    <h2 class="text-3xl font-bold mb-4">{{ event.event.title }}</h2>
     <div class="bg-white shadow rounded-lg p-6">
       <p class="text-gray-600 mb-2"><strong>Date:</strong> {{ (event.event.occurs) }}</p>
       <p class="text-gray-600 mb-2"><strong>Location:</strong> {{ event.event.location }}</p>
