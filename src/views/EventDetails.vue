@@ -1,40 +1,67 @@
 <template>
-  <div v-if="event" class="max-w-2xl mx-auto">
+  <div v-if="event && !registered" class="max-w-2xl mx-auto">
     <h2 class="text-3xl font-bold mb-4">{{ event.title }}</h2>
     <div class="bg-white shadow rounded-lg p-6">
-      <p class="text-gray-600 mb-2"><strong>Date:</strong> {{ (event.instance_occurs) }}</p>
-      <p class="text-gray-600 mb-2"><strong>Location:</strong> {{ event.Events.location }}</p>
-      <p class="text-gray-600 mb-4"><strong>Description:</strong> {{ event.Events.description }}</p>
+      <p class="text-gray-600 mb-2"><strong>Date:</strong> {{ (event.event.occurs) }}</p>
+      <p class="text-gray-600 mb-2"><strong>Location:</strong> {{ event.event.location }}</p>
+      <p class="text-gray-600 mb-4"><strong>Description:</strong> {{ event.event.description }}</p>
       <p class="text-gray-600 mb-2"><strong>Max Attendees:</strong> {{ event.max_attendees }}</p>
       <p class="text-gray-600 mb-2"><strong>Last Registration Date:</strong> {{ (event.last_registration_dt) }}</p>
-      <p v-if="event.recurring == 0 || event.recurring > 1" class="text-gray-600 mb-4">
-        <strong>Recurring Event:</strong> Every {{ event.recurring_interval }} days
+      <p v-if="event.event.recurring == 0 || event.event.recurring_interval > 1" class="text-gray-600 mb-4">
+        <strong>Recurring Event:</strong> Every {{ event.event.recurring_interval }} days
       </p>
       <h3 class="text-xl font-semibold mb-2">Registration Questions</h3>
       <form @submit.prevent="handleRegistration">
-        <div v-for="question in questions" :key="question.id" class="mb-4">
+        <div v-for="(question, index) in questions" :key="index" class="mb-4">
           <label :for="'question-' + question.id" class="block text-gray-700 text-sm font-bold mb-2">
             {{ question.question }} {{ question.mandatory ? '*' : '' }}
           </label>
           <div v-if="question.type === 'dropdown'">
-            <select :id="'question-' + question.id" v-model="answers[question.id]" :required="question.mandatory" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <select 
+              :id="'question-' + index" 
+              v-model="question.answer" 
+              :required="question.mandatory" 
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            >
               <option v-for="option in question.options" :key="option" :value="option">
                 {{ option }}
               </option>
             </select>
           </div>
           <div v-else-if="question.type === 'shorttext'">
-            <input type="text" :id="'question-' + question.id" v-model="answers[question.id]" :required="question.mandatory" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <input 
+              type="text" 
+              :id="'question-' + index" 
+              v-model="question.answer" 
+              :required="question.mandatory" 
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
           </div>
           <div v-else-if="question.type === 'longtext' || question.type === 'text'">
-            <input type="text" :id="'question-' + question.id" v-model="answers[question.id]" :required="question.mandatory" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            <input 
+              type="textarea" 
+              :id="'question-' + index" 
+              v-model="question.answer" 
+              :required="question.mandatory" 
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
           </div>
-          <div v-else-if="question.type === 'shorttext'">
-            <input type="text" :id="'question-' + question.id" v-model="answers[question.id]" :required="question.mandatory" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+          <div v-else-if="question.type === 'number'">
+            <input 
+              type="number" 
+              :id="'question-' + index" 
+              v-model="question.answer" 
+              :required="question.mandatory" 
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            />
           </div>
           <div v-else-if="question.type === 'boolean'">
-            <input type="checkbox" :id="'question-' + question.id" v-model="answers[question.id]" :required="question.mandatory" class="mr-2">
-            <label :for="'question-' + question.id">Yes</label>
+            <input 
+              type="checkbox" 
+              :id="'question-' + index" 
+              v-model="question.answer" 
+              :required="question.mandatory"  class="mr-2">
+            <label :for="'question-' + index">Yes</label>
           </div>
         </div>
         <button type="submit" :disabled="!authStore.user" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50 disabled:cursor-not-allowed">
@@ -44,48 +71,41 @@
       </form>
     </div>
   </div>
+  <div v-else-if="registered && event">
+    <div class="max-w-2xl mx-auto">
+      <h2 class="text-3xl font-bold mb-4">Registration Successful for {{ event.event.title }}!</h2>
+      <div class="bg-white shadow rounded-lg p-6">
+        <p class="text-gray-600 mb-2"><strong>Date:</strong> {{ event.event.occurs }}</p>
+        <p class="text-gray-600 mb-2"><strong>Location:</strong> {{ event.event.location }}</p>
+        <p class="text-gray-600 mb-4"><strong>Description:</strong> {{ event.event.description }}</p>
+        <p class="text-gray-600 mb-2"><strong>Max Attendees:</strong> {{ event.max_attendees }}</p>
+        <p class="text-gray-600 mb-2"><strong>Last Registration Date:</strong> {{ event.last_registration_dt }}</p>
+      </div>
+      <RouterLink to="/events" class="block mt-4 text-blue-500 hover:text-blue-700">Back to Events</RouterLink>
+    </div>
+  </div>
   <div v-else-if="loading" class="text-center text-gray-500">
     Loading event details...
   </div>
   <div v-else class="text-center text-gray-500">
-    Event not found.
+    Event not found and a life crisis is happening
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { format } from 'date-fns'
 import { useAuthStore } from '../stores/auth'
 import { supabase } from '../supabase'
+import { EventInstance, Question } from '../types'
 
-interface Question {
-  id: number;
-  question: string;
-  type: 'dropdown' | 'shorttext' | 'longtext' | 'float' | 'boolean' | 'date';
-  options?: string[];
-  mandatory: boolean;
-  matchmaking: boolean;
-}
-
-interface Event {
-  id: number;
-  title: string;
-  occurs: string;
-  location: string;
-  description: string;
-  max_attendees: number;
-  recurring: number;
-  recurring_interval?: number;
-  last_registration_dt: string;
-}
 
 const route = useRoute()
-const event = ref<Event | null>(null)
+const event = ref<EventInstance | null>(null)
 const questions = ref<Question[]>([])
-const answers = ref<Record<number, string | boolean>>({})
 const authStore = useAuthStore()
 const loading = ref(true)
+const registered = ref(false)
 
 onMounted(async () => {
   const eventId = route.params.id
@@ -95,7 +115,7 @@ onMounted(async () => {
       .from('EventInstances')
       .select(`
       *,
-      Events (
+      event:Events (
         *
       )
       `)
@@ -107,6 +127,7 @@ onMounted(async () => {
 
     if (eventError) throw eventError
     event.value = eventData
+    console.log(event.value)
 
     // Fetch questions for the event
     const { data: questionData, error: questionError } = await supabase
@@ -117,7 +138,7 @@ onMounted(async () => {
     if (questionError) throw questionError
     questions.value = questionData
   } catch (error) {
-    console.error('Error fetching event details:', error)
+    console.error('Error fetching event details:', error + ' ')
   } finally {
     loading.value = false
   }
@@ -146,23 +167,26 @@ const handleRegistration = async () => {
       .insert({
         event_instance_id: event.value?.id,
         user_id: authStore.user.id,
-      })
-      .select()
-      .single()
-    
+    })
+    .select()
+    .single()
+  
     if (registrationError) throw registrationError
 
     const registrationId = registrationData.id
 
     // Insert answers
-    const answersToInsert = Object.entries(answers.value).map(([questionId, answer]) => ({
-      question_id: questionId,
-      answer_text: typeof answer === 'string' ? answer : null,
-      answer_date: null,
-      answer_number: null,
-      user_id: authStore.user.id,
-      event_instance_id: event.value?.id,
-    }))
+    const answersToInsert = questions.value
+      .filter(question => question.id !== undefined)
+      .map(question => ({
+        question_id: question.id,
+        answer_text: typeof question.answer === 'string' ? question.answer : null,
+        answer_date: null,
+        answer_number: null,
+        user_id: authStore.user.id,
+        event_instance_id: event.value?.id,
+        registration_id: registrationId,
+      }))
 
     const { error: answersError } = await supabase
       .from('QuestionAnswers')
@@ -171,6 +195,7 @@ const handleRegistration = async () => {
     if (answersError) throw answersError
 
     console.log('Registration successful')
+    registered.value = true
   } catch (error) {
     console.error('Error registering:', error)
   }

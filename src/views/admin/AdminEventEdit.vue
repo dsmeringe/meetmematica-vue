@@ -1,6 +1,7 @@
 <template>
   <div>
-    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Edit Event</h2>
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6" v-if="route.params.id">Edit Event</h2>
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6" v-else>Create Event</h2>
     <form v-if="event" @submit.prevent="handleUpdateEvent" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
@@ -44,15 +45,15 @@
       </div>
       <div class="mb-4">
         <label class="flex items-center" for="recurring">
-          Recurring Event (0 for non-recurring)
+          Recurring Event (0 for non-recurring, above 1 for recurring)
         </label>
         <input v-model="event.recurring"
           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           id="recurring" type="number" min="0" />
       </div>
-      <div v-if="event.recurring == 0 || event.recurring > 1" class="mb-4">
+      <div v-if="event.recurring == 0 || event.recurring_interval > 1" class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="recurring_interval">
-          Recurring Interval (days)
+          recurring Interval (days)
         </label>
         <input v-model="event.recurring_interval"
           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -66,13 +67,13 @@
           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           id="last_registration_dt" type="datetime-local">
       </div>
-      <div class="mb-4">
+      <div class="mb-4 border rounded py-4 px-3 leading-tight bg-zinc-100">
         <h3 class="text-lg font-bold mb-2">Dynamic Questions</h3>
         <button @click.prevent="addQuestion"
           class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-2">
           Add Question
         </button>
-        <div v-for="(question, index) in questions" :key="index" class="mb-4 p-4 border rounded">
+        <div v-for="(question, index) in questions" :key="index" class="mb-4 p-4 border rounded bg-zinc-50">
           <input v-model="question.question" placeholder="Question"
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2">
           <select v-model="question.type"
@@ -108,7 +109,7 @@
       <div class="flex items-center justify-between">
         <button type="submit"
           class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-          Update Event
+          Save Event
         </button>
       </div>
     </form>
@@ -122,27 +123,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '../../supabase'
-
-interface Question {
-  id?: number;
-  question: string;
-  type: 'dropdown' | 'shorttext' | 'longtext' | 'float' | 'boolean' | 'date';
-  options?: string;
-  mandatory: boolean;
-  matchmaking: boolean;
-}
-
-interface Event {
-  id: number;
-  title: string;
-  description: string;
-  occurs: string;
-  location: string;
-  max_attendees: number;
-  recurring: number;
-  recurring_interval?: number;
-  last_registration_dt: string;
-}
+import { Event, Question } from '../../types'
 
 const route = useRoute()
 const router = useRouter()
@@ -151,30 +132,49 @@ const questions = ref<Question[]>([])
 
 onMounted(async () => {
   const eventId = route.params.id
-  try {
-    // Fetch event details
-    const { data: eventData, error: eventError } = await supabase
-      .from('Events')
-      .select('*')
-      .eq('id', eventId)
-      .single()
+  if (typeof(eventId) !== 'undefined') {
+    try {
+      // Fetch event details
+      const { data: eventData, error: eventError } = await supabase
+        .from('Events')
+        .select('*')
+        .eq('id', eventId)
+        .single()
 
-    if (eventError) throw eventError
-    event.value = eventData
+      if (eventError) throw eventError
+      event.value = eventData
+      if (event.value) {
+        event.value.occurs = new Date(event.value.occurs.substring(0, 19)).toISOString()
+        event.value.last_registration_dt = new Date(event.value.last_registration_dt.substring(0, 19)).toISOString()
+      }
+      console.log('Event:', event.value)
 
-    // Fetch questions for the event
-    const { data: questionData, error: questionError } = await supabase
-      .from('Questions')
-      .select('*')
-      .eq('event_id', eventId)
+      // Fetch questions for the event
+      const { data: questionData, error: questionError } = await supabase
+        .from('Questions')
+        .select('*')
+        .eq('event_id', eventId)
 
-    if (questionError) throw questionError
-    questions.value = questionData.map(q => ({
-      ...q,
-      options: q.options ? q.options.join(',') : ''
-    }))
-  } catch (error) {
-    console.error('Error fetching event details:', error)
+      if (questionError) throw questionError
+      questions.value = questionData.map(q => ({
+        ...q,
+        options: q.options ? q.options.join(',') : ''
+      }))
+    } catch (error) {
+      console.error('Error fetching event details:', error)
+    }
+  } else {
+    event.value = {
+      id: 0,
+      title: '',
+      description: '',
+      occurs: new Date().toISOString(),
+      location: '',
+      max_attendees: 1,
+      recurring: 1,
+      recurring_interval: 0,
+      last_registration_dt: new Date().toISOString(),
+    }
   }
 })
 
@@ -192,67 +192,91 @@ const removeQuestion = (index: number) => {
 }
 
 const handleUpdateEvent = async () => {
+
   if (!event.value) return
 
-  try {
-    // Update event
-    const { error: eventError } = await supabase
-      .from('Events')
-      .update(event.value)
-      .eq('id', event.value.id)
+  if (event.value.id) {
 
+    console.log('Updating event:', event.value)
+
+    try {
+      // Update event
+      const { error: eventError } = await supabase
+        .from('Events')
+        .update(event.value)
+        .eq('id', event.value.id);
+
+      if (eventError) throw eventError; 
+  
+      // Delete questions that are no longer present
+      const questionIds = questions.value.map(q => q.id);
+      const { error: deleteError } = await supabase
+        .from('Questions')
+        .delete()
+        .in('id', questionIds)
+        .eq('event_id', event.value!.id);
+    
+      if (deleteError) throw deleteError
+    
+      // Handle upsert of questions
+      
+      const questionsToUpsert = questions.value.map(q => ({
+        ...q,
+        event_id: event.value!.id,
+        options: q.type === 'dropdown' ? q.options?.join(',') : null
+      }));
+
+      const { error: questionsError } = await supabase
+        .from('Questions')
+        .upsert(questionsToUpsert, { onConflict: 'id' });
+
+      if (questionsError) throw questionsError;
+
+      // Redirect to event list after successful update
+      router.push('/admin/events')
+
+    } catch (error) {
+      console.error('Error updating event:', error)
+    }
+  } else {
+    handleCreateEvent()
+  }
+}
+
+const handleCreateEvent = async () => {
+  try {
+    console.log('Creating event:', event.value)
+    let eventCopy = event.value 
+    if (eventCopy) delete eventCopy.id
+    // Insert event
+    const { data: eventData, error: eventError } = await supabase
+      .from('Events')
+      .insert([eventCopy])
+      .select()
+    
     if (eventError) throw eventError
 
-    // Update questions
-    const questionsToUpdate = questions.value.filter(q => q.id).map(q => ({
-      ...q,
-      event_id: event.value!.id,
-      options: q.type === 'dropdown' ? q.options?.split(',').map(o => o.trim()) : null
-    }))
+    const newEventId = eventData[0].id
 
-    const questionsToInsert = questions.value.filter(q => !q.id).map(q => ({
-      ...q,
-      event_id: event.value!.id,
-      options: q.type === 'dropdown' ? q.options?.split(',').map(o => o.trim()) : null
-    }))
- 
-    /*
-    const questionIdsToKeep = questionsToUpdate.map(q => q.id)
+    // Insert questions
+    if (questions.value.length > 0) {
+      const questionsWithEventId = questions.value.map(q => ({
+        ...q,
+        event_id: newEventId,
+        options: q.type === 'dropdown' ? q.options?.join(',') : null
+      }))
 
-    // Delete questions that are no longer present
-   
-    const { error: deleteError } = await supabase
-      .from('Questions')
-      .delete()
-      .eq('event_id', event.value.id)
-      .not('id', 'in', questionIdsToKeep)
-
-    if (deleteError) throw deleteError
-    */
-
-    // Update existing questions
-    if (questionsToUpdate.length > 0) {
-      const { error: updateError } = await supabase
+      const { error: questionsError } = await supabase
         .from('Questions')
-        .upsert(questionsToUpdate)
+        .insert(questionsWithEventId)
 
-      if (updateError) throw updateError
+      if (questionsError) throw questionsError
     }
 
-    // Insert new questions
-    if (questionsToInsert.length > 0) {
-      const { error: insertError } = await supabase
-        .from('Questions')
-        .insert(questionsToInsert)
-
-      if (insertError) throw insertError
-    }
-
-    // Redirect to event list after successful update
+    // Redirect to event list after successful creation
     router.push('/admin/events')
-
   } catch (error) {
-    console.error('Error updating event:', error)
+    console.error('Error creating event:', error)
   }
 }
 </script>

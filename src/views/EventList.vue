@@ -22,15 +22,7 @@
 import { ref, onMounted } from 'vue'
 import { format } from 'date-fns'
 import { supabase } from '../supabase'
-
-interface Event {
-  id: number;
-  title: string;
-  occurs: string;
-  location: string;
-  description: string;
-  updated_at: string;
-}
+import { Event } from '../types'
 
 /*
 const events = ref<Event[]>([])
@@ -52,6 +44,7 @@ onMounted(async () => {
     const { data, error } = await supabase
       .from('Events')
       .select('*')
+      .gte('occurs', new Date().toISOString())
       .order('occurs', { ascending: true })
     
     if (error) throw error
